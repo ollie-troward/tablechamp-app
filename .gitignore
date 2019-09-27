@@ -8,3 +8,4 @@ main.js
 *.scss
 .firebase*
 images/
+js/firebase-key.js
