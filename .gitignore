@@ -7,3 +7,4 @@ main.js
 *.map
 *.scss
 .firebase*
+images/
