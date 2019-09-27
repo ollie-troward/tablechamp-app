@@ -244,7 +244,8 @@
                     "singles_lost": data[key].singles_lost,
                     "singles_points": data[key].singles_points,
                     "singles_won": data[key].singles_won,
-                    "status": data[key].status
+                    "status": data[key].status,
+                    "team": data[key].team
                 });
             }
         }
@@ -447,7 +448,8 @@
                         'name': doublesArray[i].name,
                         'points': doublesPoints,
                         'rank': doublesArray[i].doubles_rank,
-                        'type': 'doubles'
+                        'type': 'doubles',
+                        'team': (typeof doublesArray[i].team !== 'undefined') ? doublesArray[i].team : 'unknown'
                     });
                 } else {
                     doublesRankings += tmpl('rankingsRow', {
@@ -456,7 +458,8 @@
                         'name': doublesArray[i].name,
                         'points': doublesPoints,
                         'rank': doublesArray[i].doubles_rank,
-                        'type': 'doubles'
+                        'type': 'doubles',
+                        'team': (typeof doublesArray[i].team !== 'undefined') ? doublesArray[i].team : 'unknown'
                     });
                 }
             }
@@ -600,7 +603,8 @@
                         'name': singlesArray[i].name,
                         'points': singlesPoints,
                         'rank': singlesArray[i].singles_rank,
-                        'type': 'singles'
+                        'type': 'singles',
+                        'team': (typeof singlesArray[i].team !== 'undefined') ? singlesArray[i].team : 'unknown'
                     });
                 } else {
                     singlesRankings += tmpl('rankingsRow', {
@@ -609,7 +613,8 @@
                         'name': singlesArray[i].name,
                         'points': singlesPoints,
                         'rank': singlesArray[i].singles_rank,
-                        'type': 'singles'
+                        'type': 'singles',
+                        'team': (typeof singlesArray[i].team !== 'undefined') ? singlesArray[i].team : 'unknown'
                     });
                 }
             }
@@ -1352,7 +1357,7 @@
                 var newPlayerKey = fbdb.ref().child('players').push().key;
                 // Add new player
                 var dbPlayers = fbdb.ref('/players/' + newPlayerKey);
-                dbPlayers.set({ 
+                dbPlayers.set({
                     "doubles_last_movement": '',
                     "doubles_lost": 0,
                     "doubles_points": 100,
@@ -1363,7 +1368,8 @@
                     "singles_lost": 0,
                     "singles_points": 100,
                     "singles_won": 0,
-                    "status": true 
+                    "status": true,
+                    "team": 'unknown'
                 }).then(function() {
                     playerSettingsUpdate();
                     messageShow('success', i18n.app.messages.playerAdded, true);
