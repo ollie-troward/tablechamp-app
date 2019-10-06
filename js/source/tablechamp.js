@@ -159,6 +159,8 @@
         fbdb.ref('/players/').on('value', function(snapshot) {
             // Update local data set
             localDataUpdate(snapshot.val());
+            // Update doubles partners
+            doublesPartnerUpdate();
             // Update doubles rankings
             doublesRankingsUpdate();
             // Update singles rankings
@@ -242,6 +244,7 @@
                     "dt": data[key].dt,
                     "key": key,
                     "name": data[key].name,
+                    "partner": data[key].partner,
                     "singles_last_movement": data[key].singles_last_movement,
                     "singles_lost": data[key].singles_lost,
                     "singles_points": data[key].singles_points,
@@ -298,7 +301,7 @@
         localData.settings.appColors.c3 = (typeof data.appColors.c3 !== 'undefined') ? data.appColors.c3 : defaultColors.c3;
         localData.settings.appColors.c4 = (typeof data.appColors.c4 !== 'undefined') ? data.appColors.c4 : defaultColors.c4;
         localData.settings.appColors.c5 = (typeof data.appColors.c5 !== 'undefined') ? data.appColors.c5 : defaultColors.c5;
-        /* Dark 
+        /* Dark
         'c0' : '#FFF',
         'c1' : '#8F9EAB',
         'c2' : '#67727B',
@@ -449,6 +452,7 @@
                         'key': doublesArray[i].key,
                         'lastMovement': rankingMovementStyles(doublesLastMovement),
                         'name': doublesArray[i].name,
+                        'partner': (typeof doublesArray[i].partner !== 'undefined') ? doublesArray[i].partner : '',
                         'points': doublesPoints,
                         'rank': doublesArray[i].doubles_rank,
                         'type': 'doubles',
@@ -460,6 +464,7 @@
                         'key': doublesArray[i].key,
                         'lastMovement': rankingMovementStyles(doublesLastMovement),
                         'name': doublesArray[i].name,
+                        'partner': (typeof doublesArray[i].partner !== 'undefined') ? doublesArray[i].partner : '',
                         'points': doublesPoints,
                         'rank': doublesArray[i].doubles_rank,
                         'type': 'doubles',
@@ -470,6 +475,64 @@
         }
         $('.doubles .top-rankings').html(doublesTopRankings);
         $('.doubles .rankings').html(doublesRankings);
+    }
+    function doublesPartnerUpdate() {
+        var doublesArray = localData.playersByDoubles;
+        for (var i = 0; i < doublesArray.length; i++) {
+          fbdb.ref('/playersgame/' + player.key).once('value').then(function(snapshot) {
+              var playersGames = snapshot.val();
+              var partnerCount = [];
+              for (var key in playersGames) {
+                  if (playersGames[key].t1p1 == player.id) {
+                      continue;
+                  } else {
+                      if (partnerCount[playersGames[key].t1p1]  && playersGames[key].t1p1 != '') {
+                          partnerCount[playersGames[key].t1p1]++;
+                      } else {
+                          partnerCount[playersGames[key].t1p1] = 1;
+                      }
+                  }
+
+                  if (playersGames[key].t1p2 == player.id) {
+                      continue;
+                  } else {
+                      if (partnerCount[playersGames[key].t1p2] && playersGames[key].t1p2 != '') {
+                          partnerCount[playersGames[key].t1p2]++;
+                      } else {
+                          partnerCount[playersGames[key].t1p2] = 1;
+                      }
+                  }
+
+                  if (playersGames[key].t2p1 == player.id) {
+                      continue;
+                  } else {
+                      if (partnerCount[playersGames[key].t2p1] && playersGames[key].t2p1 != '') {
+                          partnerCount[playersGames[key].t2p1]++;
+                      } else {
+                          partnerCount[playersGames[key].t2p1] = 1;
+                      }
+                  }
+
+                  if (playersGames[key].t2p2 == player.id) {
+                      continue;
+                  } else {
+                      if (partnerCount[playersGames[key].t2p2] && playersGames[key].t2p2 != '') {
+                          partnerCount[playersGames[key].t2p2]++;
+                      } else {
+                          partnerCount[playersGames[key].t2p2] = 1;
+                      }
+                  }
+              }
+
+              if (partnerCount.length > 0) {
+                var bestPartnerId = Object.keys(partnerCount).reduce(function(a, b){ return partnerCount[a] > partnerCount[b] ? a : b });
+              }
+          }).catch(function(error) {
+              console.log('Unable to find best partner');
+              console.log(error)
+              return ''
+          });
+      }
     }
     function rankingsEvents() {
         // Show stats
@@ -606,6 +669,7 @@
                         'key': singlesArray[i].key,
                         'lastMovement': rankingMovementStyles(singlesLastMovement),
                         'name': singlesArray[i].name,
+                        'partner': '',
                         'points': singlesPoints,
                         'rank': singlesArray[i].singles_rank,
                         'type': 'singles',
@@ -617,6 +681,7 @@
                         'key': singlesArray[i].key,
                         'lastMovement': rankingMovementStyles(singlesLastMovement),
                         'name': singlesArray[i].name,
+                        'partner': '',
                         'points': singlesPoints,
                         'rank': singlesArray[i].singles_rank,
                         'type': 'singles',
@@ -1028,7 +1093,7 @@
             console.log('Failed to update players data');
         });
         // Save "players_game" data
-        var playersGameData = { 
+        var playersGameData = {
             "dt": Date.now(),
             "game": gameKey,
             "player": key,
@@ -1371,6 +1436,7 @@
                     "doubles_won": 0,
                     "dt": Date.now(),
                     "name": player,
+                    "partner": '',
                     "singles_last_movement": '',
                     "singles_lost": 0,
                     "singles_points": 100,
@@ -1425,12 +1491,12 @@
         var windowHeight = parseInt($(window).height());
         var newSidebarHeight = Math.max(sidebarHeight, windowHeight);
         $('.sidebar').css('height', newSidebarHeight + 'px');
-    }  
+    }
     function sidebarShow() {
         $('body').addClass('show-sidebar');
         sidebarInitBasic();
         sidebarResetHeight();
-    }     
+    }
     function sidebarToggle() {
         var body = $('body');
         if (body.hasClass('show-sidebar')) {
